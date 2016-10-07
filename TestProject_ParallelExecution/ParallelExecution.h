@@ -56,12 +56,12 @@ public:
 	 * @param idxBegin first index to start (including), e. g. <code>0</code>
 	 * @param idxEnd last index to start (including), e. g. <code>container.size()</code>
 	 * @param callback this function will be called from each thread multiple times. Each time an associated index will be passed to the function
-	 * @param numbThreadsFor number of threads which should be used for parallelisation
+	 * @param numbThreadsFor number of threads which should be used for parallelisation (only for the current specific loop)
 	 */
-	void parallel_for(const size_t idxBegin, const size_t idxEnd, const std::function<void(const size_t)>& callback, const size_t numbThreadsFor = std::thread::hardware_concurrency()) const
+	void parallel_for(const size_t idxBegin, const size_t idxEnd, const std::function<void(const size_t)>& callback, const size_t numbThreadsFor = CLASS_SETTING) const
 	{
 		/* If the user provides a thread number for this loop, use it. Otherwise use the thread number from the class */
-		size_t _numbThreadsFor = numbThreadsFor == std::thread::hardware_concurrency() ? numbThreads : numbThreadsFor;
+		size_t _numbThreadsFor = numbThreadsFor == CLASS_SETTING ? numbThreads : numbThreadsFor;
 		const size_t sizeThreads = std::min(idxEnd - idxBegin + 1, _numbThreadsFor);
 		assert(sizeThreads > 0 && "No index range given");
 
@@ -110,4 +110,5 @@ private:
 	size_t numbThreads;
 	std::mutex mutexResult;
 	std::mutex mutexConsole;
+	static const size_t CLASS_SETTING = 0;
 };

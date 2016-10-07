@@ -31,7 +31,7 @@ std::deque<double> parallelExecution(const std::deque<double>& input)
 {
 	/* Note: the code is just an example for the usage of the ParallelExecution class and does not really cover an useful scenario */
 	
-	ParallelExecution pe;
+	ParallelExecution pe(12);    // Number of threads to use, if not otherwise specified
 
 	std::deque<double> resultVariable;
 	pe.parallel_for(0, input.size() - 1, [&](const size_t i)		// Outer for loop uses as much threads as cores are available on the system
