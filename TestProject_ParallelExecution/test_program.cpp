@@ -36,7 +36,7 @@ std::deque<double> parallelExecution(const std::deque<double>& inputA, const std
 
             pe.setResult([&] ()
             {
-                result[j] += newValue;                                // Store the result value in a thread-safe way (in different iterations the same variable may be accessed at the same time)
+                result[j] += newValue;                               // Store the result value in a thread-safe way (in different iterations the same variable may be accessed at the same time)
             });
         }, 2);
 
