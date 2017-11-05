@@ -21,7 +21,7 @@ std::deque<double> serialExecution(const std::deque<double>& inputA, const std::
 
 std::deque<double> parallelExecution(const std::deque<double>& inputA, const std::deque<double>& inputB)
 {
-    /* Note: the code is just an example for the usage of the ParallelExecution class and does not really cover a useful scenario */
+    /* Note: the code is just an example of the usage of the ParallelExecution class and does not really cover a useful scenario */
 
     assert(inputA.size() == inputB.size() && "Both input arrays need to have the same size");
 
