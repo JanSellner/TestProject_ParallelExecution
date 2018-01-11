@@ -53,8 +53,8 @@ public:
     /**
      * @brief Executes index-based containers in parallel.
      * 
-     * @param idxBegin first index to start (including), e. g. <code>0</code>
-     * @param idxEnd last index to start (including), e. g. <code>container.size()</code>
+     * @param idxBegin first index to start (including), e.g. <code>0</code>
+     * @param idxEnd last index to start (including), e.g. <code>container.size()</code>
      * @param callback this function will be called from each thread multiple times. Each time an associated index will be passed to the function
      * @param numbThreadsFor number of threads which should be used for parallelisation (only for the current specific loop)
      */
