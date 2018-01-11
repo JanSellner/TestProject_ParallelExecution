@@ -10,6 +10,23 @@
 
 class ParallelExecution
 {
+private:
+    struct StreamLock
+    {
+        ~StreamLock()
+        {
+            mutexConsole.unlock();
+        }
+
+        template<typename T>
+        std::ostream& operator<<(T printArgument)
+        {
+            mutexConsole.lock();
+
+            return std::cout << printArgument;
+        }
+    };
+
 public:
     /**
      * @brief Provides simple methods to parallel for loops including helper functions for critical sections.
@@ -48,6 +65,16 @@ public:
         std::lock_guard<std::mutex> lock(mutexConsole);
 
         std::cout << message << std::endl;
+    }
+
+    /**
+     * @brief aquires locked access to the cout object until the end of the current scope.
+     * 
+     * @return the encapsulating ParallelExecution::StreamLock object which takes care of the lock for the console writing.
+     */
+    StreamLock cout()
+    {
+        return StreamLock();
     }
 
     /**
@@ -125,6 +152,6 @@ public:
 private:
     size_t numbThreads;
     std::mutex mutexResult;
-    std::mutex mutexConsole;
+    static inline std::mutex mutexConsole;
     static const size_t CLASS_SETTING = 0;
 };

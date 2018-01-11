@@ -40,7 +40,8 @@ std::deque<double> parallelExecution(const std::deque<double>& inputA, const std
             });
         }, 2);
 
-        pe.write("Iteration " + std::to_string(i) + " done");        // Gives a threads-safe console output
+        pe.cout() << "Iteration " << i << " done" << std::endl;      // Gives a threads-safe console output
+        //pe.write("Iteration " + std::to_string(i) + " done");      // Alternatively, provide a string to be printed
     });
 
     return result;
