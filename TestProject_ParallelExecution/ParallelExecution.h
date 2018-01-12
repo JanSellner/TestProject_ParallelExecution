@@ -11,6 +11,7 @@
 class ParallelExecution
 {
 private:
+    template<std::ostream& streamOperator>
     struct StreamLock
     {
         ~StreamLock()
@@ -23,7 +24,7 @@ private:
         {
             mutexConsole.lock();
 
-            return std::cout << printArgument;
+            return streamOperator << printArgument;
         }
     };
 
@@ -72,9 +73,19 @@ public:
      * 
      * @return the encapsulating ParallelExecution::StreamLock object which takes care of the lock for the console writing.
      */
-    StreamLock cout()
+    StreamLock<std::cout> cout()
     {
-        return StreamLock();
+        return StreamLock<std::cout>();
+    }
+
+    /**
+     * @brief aquires locked access to the cerr object until the end of the current scope.
+     *
+     * @return the encapsulating ParallelExecution::StreamLock object which takes care of the lock for the console writing.
+     */
+    StreamLock<std::cerr> cerr()
+    {
+        return StreamLock<std::cerr>();
     }
 
     /**
