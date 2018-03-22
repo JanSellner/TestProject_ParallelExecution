@@ -46,11 +46,32 @@ std::deque<double> parallelExecution(const std::deque<double>& inputA, const std
     return result;
 }
 
+void exceptionTest()
+{
+    ParallelExecution pe;
+    
+    try
+    {
+        pe.parallel_for(0, 2, [] (const size_t i)
+        {
+            throw std::string("This is an exception thrown from one of the threads which execute in parallel");
+        });
+    }
+    catch (const std::string& exc)
+    {
+        std::cout << "Exception from thread: " << exc << std::endl;
+        // Note: if multiple exceptions are thrown, only the first one is catched
+        // If you are interested in the other exceptions as well, you pe.getThreadExceptions(); and re-throw them manually
+    }
+}
+
 int main()
 {
-    std::deque<double> inputA(10'000LLU, 42);
-    std::deque<double> inputB(10'000LLU, 4711.1337);
+    const std::deque<double> inputA(10'000LLU, 42);
+    const std::deque<double> inputB(10'000LLU, 4711.1337);
 
     serialExecution(inputA, inputB);
     parallelExecution(inputA, inputB);
+
+    exceptionTest();
 }

@@ -53,33 +53,44 @@ public:
     /**
      * @brief Executes index-based containers in parallel.
      * 
+     * It is save to throw exceptions from inside the threads. They are catched and re-thrown later in the main thread.
+     * 
      * @param idxBegin first index to start (including), e.g. <code>0</code>
      * @param idxEnd last index to start (including), e.g. <code>container.size()</code>
      * @param callback this function will be called from each thread multiple times. Each time an associated index will be passed to the function
      * @param numbThreadsFor number of threads which should be used for parallelisation (only for the current loop)
      */
-    void parallel_for(const size_t idxBegin, const size_t idxEnd, const std::function<void(const size_t)>& callback, const size_t numbThreadsFor = CLASS_SETTING) const
+    void parallel_for(const size_t idxBegin, const size_t idxEnd, const std::function<void(const size_t)>& callback, const size_t numbThreadsFor = CLASS_SETTING)
     {
-        /* If the user provides a thread number for this loop, use it. Otherwise use the thread number from the class */
-        size_t _numbThreadsFor = numbThreadsFor == CLASS_SETTING ? numbThreads : numbThreadsFor;
+        /* If the user provides a thread number for this loop, use it. Otherwise, use the thread number stored in the class variable */
+        const size_t _numbThreadsFor = numbThreadsFor == CLASS_SETTING ? numbThreads : numbThreadsFor;
         const size_t sizeThreads = std::min(idxEnd - idxBegin + 1, _numbThreadsFor);
         assert(sizeThreads > 0 && "No index range given");
 
         const auto threadFunction = [&callback, this] (const size_t begin, const size_t end)
         {
-            for (size_t i = begin; i <= end; ++i)
+            // Catch any exceptions, store them and re-throw them later in the main thread (https://stackoverflow.com/questions/2209224/vector-vs-list-in-stl)
+            try
             {
-                callback(i);                                                                     // The thread function executes the callback for every assigned index
+                for (size_t i = begin; i <= end; ++i)
+                {
+                    callback(i);    // The thread function executes the callback for every assigned index
+                }
+            }
+            catch (...)
+            {
+                std::lock_guard<std::mutex> lock(mutexExceptions);
+                threadExceptions.push_back(std::current_exception());
             }
         };
 
         if (sizeThreads == 1)       // There is no need to parallelize when only one idx is given, just execute in the main thread
         {
             threadFunction(idxBegin, idxEnd);
+            checkExceptions();
             return;
         }
 
-        //TODO thread pool (https://github.com/vit-vit/ctpl)
         std::deque<std::thread> threads(sizeThreads);
         
         /* Calculate the index ranges */
@@ -111,7 +122,7 @@ public:
         for (size_t tid = 0; tid < threads.size(); tid++)
         {
             const size_t dNew = d < nRest ? d + 1 : d;
-            threads[tid] = std::thread(threadFunction, idxBegin + tid * nEqual + d, idxBegin + (tid+1)*nEqual - 1 + dNew);  // Execute the threadFunction which calls the callback from the user
+            threads[tid] = std::thread(threadFunction, idxBegin + tid * nEqual + d, idxBegin + (tid + 1)*nEqual - 1 + dNew);  // Execute the threadFunction which calls the callback from the user
             d = dNew;
         }
 
@@ -120,6 +131,22 @@ public:
         {
             threads[i].join();
         }
+
+        checkExceptions();
+    }
+
+    std::deque<std::exception_ptr>& getThreadExceptions()
+    {
+        return threadExceptions;
+    }
+
+private:
+    void checkExceptions()
+    {
+        for (const std::exception_ptr exception : threadExceptions)
+        {
+            std::rethrow_exception(exception);
+        }
     }
 
 private:
@@ -127,4 +154,7 @@ private:
     std::mutex mutexResult;
     std::mutex mutexConsole;
     static const size_t CLASS_SETTING = 0;
+
+    std::mutex mutexExceptions;
+    std::deque<std::exception_ptr> threadExceptions;
 };
