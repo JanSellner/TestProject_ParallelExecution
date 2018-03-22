@@ -12,9 +12,9 @@ class ParallelExecution
 {
 public:
     /**
-     * @brief Provides simple methods to parallel for loops including helper functions for critical sections.
+     * @brief Provides simple methods to parallelize for loops including helper functions for critical sections.
      * 
-     * @param numbThreads specifies the number of threads used for parallelisation (if not specified otherwise). Defaults to the number of cores available on the system (virtual + real cores)
+     * @param numbThreads specifies the number of threads used for parallelization (if not specified otherwise). Defaults to the number of cores available on the system (virtual + real cores)
      */
     explicit ParallelExecution(const size_t numbThreads = std::thread::hardware_concurrency())
         : numbThreads(numbThreads)
@@ -31,7 +31,7 @@ public:
      */
     void setResult(const std::function<void()>& callback)
     {
-        std::lock_guard<std::mutex> lock(mutexResult);                                            // Only one thread at a time is allowed to change the result value (Unlocks automatically on destructor call)
+        std::lock_guard<std::mutex> lock(mutexResult);  // Only one thread at a time is allowed to change the result value (unlocks automatically on destructor call)
 
         callback();
     }
@@ -56,7 +56,7 @@ public:
      * @param idxBegin first index to start (including), e.g. <code>0</code>
      * @param idxEnd last index to start (including), e.g. <code>container.size()</code>
      * @param callback this function will be called from each thread multiple times. Each time an associated index will be passed to the function
-     * @param numbThreadsFor number of threads which should be used for parallelisation (only for the current specific loop)
+     * @param numbThreadsFor number of threads which should be used for parallelisation (only for the current loop)
      */
     void parallel_for(const size_t idxBegin, const size_t idxEnd, const std::function<void(const size_t)>& callback, const size_t numbThreadsFor = CLASS_SETTING) const
     {
@@ -73,7 +73,7 @@ public:
             }
         };
 
-        if (sizeThreads == 1)                                                                    // There is no need to parallel when only one idx is given, just execute in main thread
+        if (sizeThreads == 1)       // There is no need to parallelize when only one idx is given, just execute in the main thread
         {
             threadFunction(idxBegin, idxEnd);
             return;
@@ -86,7 +86,7 @@ public:
         const size_t n = idxEnd - idxBegin + 1;    // Both are inclusive
         const size_t nEqual = n / sizeThreads;     // 38 / 12 = 3
         const size_t nRest = n % sizeThreads;      // 38 % 12 = 2
-        size_t d = 0;                              // The last part should equally be portioned between all threads
+        size_t d = 0;                              // The last part should be portioned equally between all threads
 
         /*
         
