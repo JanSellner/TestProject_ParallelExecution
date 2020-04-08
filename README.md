@@ -13,7 +13,7 @@ ParallelExecution pe;
 pe.parallel_for(0, iterations - 1, [&](const size_t i)  // i = {0, 1, ..., iterations - 1}
 {
   // Do stuff in parallel
-}
+});
 ```
 More details can be found in the [test program](TestProject_ParallelExecution/test_program.cpp) which also covers the usage of the thread-safe functions.
 
